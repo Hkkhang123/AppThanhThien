@@ -73,7 +73,7 @@ export default function LoginPage() {
           </div>
 
           <div className="w-full text-right text-sm text-black mb-4 hover:text-[#049BD2] transition">
-            <a href="#">Quên mật khẩu?</a>
+            <Link href="/forgot-password">Quên mật khẩu?</Link>
           </div>
 
           {error && <div className="text-red-500 mb-2 text-sm">{error}</div>}

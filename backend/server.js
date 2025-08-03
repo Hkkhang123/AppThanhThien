@@ -1,4 +1,4 @@
-import pool from './config/db.js';
+// import pool from './config/db.js';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -17,12 +17,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-try {
-  const res = await pool.query('SELECT NOW()');
-  console.log('Kết nối database thành công:', res.rows[0]);
-} catch (err) {
-  console.error('Lỗi kết nối database:', err);
-}
 
 app.use('/api/auth', authRoute);
 app.use('/api/routes', routeRoute);

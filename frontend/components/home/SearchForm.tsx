@@ -4,10 +4,10 @@ import { FaLocationArrow, FaExchangeAlt, FaMapMarkerAlt, FaCalendarAlt, FaPlus }
 
 export default function SearchForm() {
   return (
-    <div className="w-full flex justify-center items-center mt-[-50px] mb-8 z-20 relative px-4">
+    <div className="w-full flex justify-center items-center mt-[-50px] mb-8 z-20 relative px-4 ">
       <div className="flex flex-col lg:flex-row w-full max-w-[1200px] gap-4">
         {/* Group input */}
-        <form className="flex flex-col sm:flex-row flex-1 min-w-0 items-stretch bg-white rounded-2xl shadow-lg border border-gray-300 overflow-hidden">
+        <form className="flex flex-col sm:flex-row flex-1 min-w-0 items-stretch bg-white rounded-2xl shadow-lg border border-gray-300 overflow-hidden ">
           {/* Điểm đi */}
           <div className="flex items-center px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-lg sm:text-xl lg:text-2xl min-w-[180px] sm:min-w-[200px] lg:min-w-[220px] bg-white">
             <FaLocationArrow className="text-sky-500 mr-2 sm:mr-3 lg:mr-4 text-xl sm:text-2xl lg:text-3xl" />
@@ -34,12 +34,14 @@ export default function SearchForm() {
           </div>
         </form>
         {/* Nút Tìm Chuyến */}
-        <button
-          type="submit"
-          className="px-6 sm:px-8 lg:px-12 flex items-center justify-center bg-sky-500 hover:bg-sky-600 text-white font-bold text-lg sm:text-xl lg:text-2xl rounded-2xl shadow h-[60px] sm:h-[68px] lg:h-[76px] min-w-[120px] sm:min-w-[160px] lg:min-w-[220px]"
-        >
-          Tìm Chuyến
-        </button>
+        <a href="/search-results">
+          <button
+            type="button"
+            className="px-6 sm:px-8 lg:px-12 flex items-center justify-center bg-sky-500 hover:bg-sky-600 text-white font-bold text-lg sm:text-xl lg:text-2xl rounded-2xl shadow h-[60px] sm:h-[68px] lg:h-[76px] min-w-[120px] sm:min-w-[160px] lg:min-w-[220px]"
+          >
+            Tìm Chuyến
+          </button>
+        </a>
       </div>
     </div>
   );

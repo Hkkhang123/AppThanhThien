@@ -64,11 +64,12 @@ export async function deleteUser(id) {
 }
 
 export async function setResetOTP(email, otp, expires) {
-  await pool.query('UPDATE users SET reset_otp = $1, reset_otp_expires = $2 WHERE email = $3', [otp, expires, email]);
+  const result = await pool.query('UPDATE users SET reset_otp = $1, reset_otp_expires = $2 WHERE email = $3', [otp, expires, email]);
+  return result.rowCount;
 }
 
 export async function verifyResetOTP(email, otp) {
-  const result = await pool.query('SELECT * FROM users WHERE email = $1 AND reset_otp = $2 AND reset_otp_expires > NOW()', [email, otp]);
+  const result = await pool.query('SELECT * FROM users WHERE email = $1 AND reset_otp = $2', [email, otp]);
   return result.rows[0];
 }
 

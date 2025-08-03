@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 export default function SignupPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // Added phone state
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,9 +17,26 @@ export default function SignupPage() {
     e.preventDefault();
     setError('');
     setSuccess(false);
+
+    // --- START: Client-side validation ---
+    if (password.length < 6 || password.length > 20) {
+      setError("Mật khẩu phải từ 6-20 ký tự.");
+      return;
+    }
+    if (!/^[A-Z]/.test(password)) {
+      setError("Mật khẩu phải bắt đầu bằng chữ cái in hoa.");
+      return;
+    }
+    if (/[^A-Za-z0-9]/.test(password)) {
+      setError("Mật khẩu chỉ được chứa chữ cái và số.");
+      return;
+    }
+    // --- END: Client-side validation ---
+
     setLoading(true);
     try {
-      const data = await registerApi(username, email, password);
+      // Corrected the argument order and added the phone variable
+      const data = await registerApi(username, password, email, phone);
       setSuccess(true);
       
       // Lưu thông tin user vào cookie sau khi đăng ký thành công
@@ -70,6 +88,19 @@ export default function SignupPage() {
             />
             <img src="/asset/image/emailicon.png" alt="Email" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-7 h-7" />
           </div>
+          {/* Added Phone Input Field */}
+          <div className="relative mb-4">
+            <input
+              type="tel"
+              placeholder="Số điện thoại"
+              className="w-full px-4 py-2 pl-12 bg-[#DCE0E3] text-black border rounded focus:outline-blue-400"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              required
+            />
+            {/* You might want to use a phone icon here */}
+            <img src="/asset/image/profileicon.png" alt="Phone" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+          </div>
           <div className="relative mb-4">
             <input
               type="password"
@@ -83,7 +114,7 @@ export default function SignupPage() {
           </div>
 
           {error && <div className="text-red-500 mb-2 text-sm">{error}</div>}
-          {success && <div className="text-green-600 mb-2 text-sm">Đăng ký thành công!</div>}
+          {success && <div className="text-green-600 mb-2 text-sm\">Đăng ký thành công!</div>}
 
           <button
             type="submit"

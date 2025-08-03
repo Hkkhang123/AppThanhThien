@@ -5,16 +5,19 @@ import nodemailer from 'nodemailer';
 import { setResetOTP, verifyResetOTP, updatePasswordByEmail } from '../model/userModel.js';
 
 function isValidPassword(password) {
+  // 1. Kiểm tra độ dài
   if (password.length < 6 || password.length > 20) {
     return { valid: false, message: "Mật khẩu phải từ 6-20 ký tự." };
   }
+  // 2. Kiểm tra ký tự đầu tiên phải là chữ in hoa
   if (!/^[A-Z]/.test(password)) {
     return {
       valid: false,
       message: "Mật khẩu phải bắt đầu bằng chữ cái in hoa.",
     };
   }
-  if (!/^[A-Z][A-Za-z0-9]{5,19}$/.test(password)) {
+  // 3. Kiểm tra mật khẩu chỉ chứa các ký tự chữ và số (không có ký tự đặc biệt)
+  if (/[^A-Za-z0-9]/.test(password)) {
     return { valid: false, message: "Mật khẩu chỉ được chứa chữ cái và số." };
   }
   return { valid: true };
@@ -22,7 +25,7 @@ function isValidPassword(password) {
 
 function isValidEmail(email) {
   // Regex kiểm tra email cơ bản
-  return /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(email);
+  return /^[\w\-.]+@([\w-]+\.)+[\w-]{2,}$/.test(email);
 }
 
 export async function register(req, res) {
@@ -111,7 +114,12 @@ export async function forgotPasswordHandler(req, res) {
     // Sinh OTP 4 số
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
-    await setResetOTP(email, otp, expires);
+    const updatedCount = await setResetOTP(email, otp, expires);
+
+    if (updatedCount === 0) {
+      return res.status(404).json({ message: 'Email không tồn tại trong hệ thống' });
+    }
+
     // Gửi email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -132,12 +140,48 @@ export async function forgotPasswordHandler(req, res) {
   }
 }
 
-export async function resetPasswordHandler(req, res) {
+export async function verifyOtpHandler(req, res) {
   try {
-    const { email, otp, newPassword } = req.body;
-    if (!email || !otp || !newPassword) return res.status(400).json({ message: 'Thiếu thông tin' });
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: 'Thiếu thông tin email hoặc OTP' });
+    
     const user = await verifyResetOTP(email, otp);
     if (!user) return res.status(400).json({ message: 'OTP không đúng hoặc đã hết hạn' });
+    
+    // Create a short-lived token for password reset
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' } // 10 minutes validity
+    );
+
+    res.json({ message: 'OTP hợp lệ', resetToken });
+  } catch (err) {
+    res.status(500).json({ message: 'Xác thực OTP thất bại', error: err.message });
+  }
+}
+
+export async function resetPasswordHandler(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ message: 'Thiếu thông tin token hoặc mật khẩu mới' });
+
+    // Kiểm tra mật khẩu mới
+    const passwordCheck = isValidPassword(newPassword);
+    if (!passwordCheck.valid) {
+      return res.status(400).json({ message: passwordCheck.message });
+    }
+
+    // Verify the reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
+    }
+
+    const { email } = decoded;
+    
     await updatePasswordByEmail(email, newPassword);
     res.json({ message: 'Đổi mật khẩu thành công' });
   } catch (err) {
